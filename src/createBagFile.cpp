@@ -22,13 +22,15 @@
 #include <sensor_msgs/PointCloud2.h>
 
 #include "SensorData/readISLOG.h"
+#include <abandonedmarina/amDVL.h>
 
 #include <math.h> 
 #include <vector>
 #include <iostream>
 #include <fstream>
 
-#define outputScan			"Detectedfeatures"
+#define outputScan			"SonarScan"
+#define outputDVL			"DVLData"
 
 typedef pcl::PointXYZI PointT;
 typedef pcl::PointCloud<PointT> PointCloudT;
@@ -38,19 +40,21 @@ typedef pcl::PointCloud<PointT> PointCloudT;
 using namespace std;
 using namespace Eigen;
 
-class createBagFile{
+class abandonedMarina{
 public:
     ros::NodeHandle nh;
 
 private:
 	ros::Publisher pubScan;
+	ros::Publisher dvlData;
 	// readISLOG::isData isDataVec;
 
 
 public:
-	createBagFile(){
+	abandonedMarina(){
 		nh = ros::NodeHandle("~");
 		pubScan = nh.advertise<PointCloudT>(outputScan, 1);
+		dvlData = nh.advertise<abandonedmarina::amDVL>(outputDVL, 1);
 		// pubScan = nh.advertise<sensor_msgs::PointCloud2>(outputScan, 1);
 
 
@@ -63,6 +67,7 @@ public:
 		// pcl_ros::transformPointCloud("/odom" , *tmp, *tmp, listener);
 		
 		readScan();
+		readDVL();
 	}
 
 	void readScan(){
@@ -76,7 +81,7 @@ public:
 			// std::cout << "hmmmm" << std::endl;
 			scan->clear();
 			scan->header.frame_id = "sonar";
-			std::cout << isDataVec.logtime[i] << std::endl;
+			// std::cout << isDataVec.logtime[i] << std::endl;
 			// scan->header.stamp = isDataVec.logtime[i];
 			for(int j = 0; j < isDataVec.bins[i].size(); ++j){
 				p.x = 0;
@@ -86,9 +91,6 @@ public:
 				scan->points.push_back(p);
 			}
 			pcl_conversions::toPCL(ros::Time(isDataVec.logtime[i]), scan->header.stamp);
-			// sensor_msgs::PointCloud2 output;
-	  //       pcl::toROSMsg(*scan, output);
-	  //       output.header.stamp = ros::Time(isDataVec.logtime[i]);
         	Eigen::Affine3f transform = Eigen::Affine3f::Identity();
   			transform.rotate (Eigen::AngleAxisf (isDataVec.transducerangle[i], Eigen::Vector3f::UnitZ()));
   			pcl::transformPointCloud (*scan, *scan, transform);
@@ -97,15 +99,73 @@ public:
 		std::cout << "size: " << isDataVec.logtime.size() << std::endl;
 	}
 
+	void readDVL(){
+		abandonedmarina::amDVL tmp_dvld;
+
+		std::cout << "Started reading DVL data!" << std::endl;
+
+        std::ifstream file("/home/unnar/catkin_ws/src/abandonedmarina/_040825_1735_DVL.log");
+        std::string line; 
+
+        int line_number = 0;
+        std::cout.precision(13);
+        double number = 0;
+        // dvld tmp_dvld;
+        while (std::getline(file, line))
+        {
+            // std::cout << "hnenene" << std::endl;
+            std::stringstream   linestream(line);
+            std::string         data;
+
+            if (line_number > 5){
+                if (!line.empty() || line!=""){
+                    // std::getline(linestream, data, '\t');  // read up-to the first tab (discard tab).
+                    // std::cout << "hmmmmmm" << std::endl;
+                    for(int i = 0; i < 32; i++){
+                        linestream >> number;
+                        if (i == 0){
+                            tmp_dvld.header.stamp = ros::Time(number);
+                        } else if (i == 7){
+                            tmp_dvld.vwx = number;
+                        } else if (i == 8){
+                            tmp_dvld.vwy = number;
+                        } else if (i == 9){
+                            tmp_dvld.vwz = number;
+                        } else if (i == 10){
+                            tmp_dvld.waterok = int(number);
+                        } else if (i == 11){
+                            tmp_dvld.vbx = number;
+                        } else if (i == 12){
+                            tmp_dvld.vby = number;
+                        } else if (i == 13){
+                            tmp_dvld.vbz = number;
+                        } else if (i == 14){
+                            tmp_dvld.bottomok = int(number);
+                        } else if (i == 22){
+                        	tmp_dvld.yaw = number/360*2*M_PI;
+                        } else if (i == 30){
+                        	tmp_dvld.xt = number/360*2*M_PI;
+                        } else if (i == 31){
+                        	tmp_dvld.yt = number/360*2*M_PI;
+                        }
+                    }
+                    dvlData.publish(tmp_dvld);
+                }
+            }
+            line_number++;
+        }
+        std::cout << "Finished reading DVL data!" << std::endl;
+	}
+
 
 };
 
 int main (int argc, char** argv)
 {
 	// Initialize ROS 
-	ros::init (argc, argv, "abandonedmarina");
+	ros::init (argc, argv, "abandonedMarina");
 
-	createBagFile cbf;
+	abandonedMarina ab;
 	// Spin
 	ros::spin ();
 	return(0);

@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf_conversions
   eigen_conversions
+  message_generation
 )
 
 include_directories(
@@ -27,8 +28,18 @@ include_directories(
   include
 )
 
+add_message_files(
+  FILES
+  amDVL.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
 catkin_package(
-  DEPENDS
+  DEPENDS message_runtime
   CATKIN_DEPENDS roscpp
   INCLUDE_DIRS include
   LIBRARIES

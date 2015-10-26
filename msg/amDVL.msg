@@ -1,0 +1,12 @@
+std_msgs/Header header
+float32 vbx
+float32 vby
+float32 vbz
+uint8 bottomok
+float32 vwx
+float32 vwy
+float32 vwz
+uint8 waterok
+float32 yaw
+float32 xt
+float32 yt
