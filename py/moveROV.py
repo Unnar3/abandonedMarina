@@ -9,7 +9,7 @@ import tf
 from geometry_msgs.msg import Twist, Vector3, Pose, PoseStamped, PointStamped, TransformStamped, Transform
 from std_msgs.msg import Bool
 from nav_msgs.msg import Path
-from abandonedmarina.msg import amDVL
+from abandonedmarina.msg import amDVL, amMTi
 from numpy import mean, std
 import sys
 import numpy as np
@@ -17,9 +17,22 @@ import random
 from tf.transformations import euler_from_quaternion, quaternion_matrix
 
 
+def mti_callback(data):
+	print "mti:", data.header.stamp, data.Yaw
+	quad = tf.transformations.quaternion_from_euler(0, 0, data.Yaw)	
+	current.orientation.x = quad[0]
+	current.orientation.y = quad[1] 
+	current.orientation.z = quad[2]
+	current.orientation.w = quad[3]	
+
+	broadcaster.sendTransform( (current.position.x,current.position.y,current.position.z), 
+								(current.orientation.x,current.orientation.y,current.orientation.z,current.orientation.w),
+									 rospy.Time.now(), "body", "odom")
+
+
 # Recieves movement information from the dvl and updates robot position
 def dvl_callback(data):
-	print "recieved"
+	# print "recieved"
 	
 	# initialize the callback
 	if dvl_callback.intialized is False:
@@ -57,7 +70,7 @@ def dvl_callback(data):
 		print "Movement to big, returnin"
 		return
 
-	print np.sqrt(ps.point.x**2 + ps.point.y**2) / dur
+	# print np.sqrt(ps.point.x**2 + ps.point.y**2) / dur
 
 	# convert movement in body coordinate into new movement in odom coordinate (world)
 	# print "before", ps.point.x, ps.point.y
@@ -69,11 +82,11 @@ def dvl_callback(data):
 	# set new found coordinate as current coordinate
 	current.position.x = ps.point.x
 	current.position.y = ps.point.y
-	quad = tf.transformations.quaternion_from_euler(0, 0, data.yaw)	
-	current.orientation.x = quad[0]
-	current.orientation.y = quad[1]
-	current.orientation.z = quad[2]
-	current.orientation.w = quad[3]
+	# quad = tf.transformations.quaternion_from_euler(0, 0, data.yaw)	
+	# current.orientation.x = quad[0]
+	# current.orientation.y = quad[1]
+	# current.orientation.z = quad[2]
+	# current.orientation.w = quad[3]
 
 	# Broadcast new transformation
 	broadcaster.sendTransform( (current.position.x,current.position.y,current.position.z), 
@@ -122,5 +135,6 @@ if __name__ == '__main__':
 									 rospy.Time.now(), "body", "odom")
 
 	rospy.Subscriber("/abandonedMarina/DVLData", amDVL, dvl_callback);
+	rospy.Subscriber("/abandonedMarina/MTiData", amMTi, mti_callback);
 	rospy.Subscriber("/tfupdate", Bool, tfupdate_callback);
 	rospy.spin()

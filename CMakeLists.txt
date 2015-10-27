@@ -31,6 +31,7 @@ include_directories(
 add_message_files(
   FILES
   amDVL.msg
+  amMTi.msg
 )
 
 generate_messages(

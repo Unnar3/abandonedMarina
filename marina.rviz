@@ -87,7 +87,7 @@ Visualization Manager:
       Length: 4
       Name: Axes
       Radius: 1
-      Reference Frame: dvl
+      Reference Frame: odom
       Value: true
     - Class: rviz/Axes
       Enabled: true
@@ -141,9 +141,9 @@ Visualization Manager:
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -17.4474
-        Y: -33.7275
-        Z: 2.67798
+        X: -20.9644
+        Y: -92.7884
+        Z: 6.64611
       Name: Current View
       Near Clip Distance: 0.01
       Pitch: -1.5002

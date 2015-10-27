@@ -23,6 +23,7 @@
 
 #include "SensorData/readISLOG.h"
 #include <abandonedmarina/amDVL.h>
+#include <abandonedmarina/amMTi.h>
 
 #include <math.h> 
 #include <vector>
@@ -31,6 +32,7 @@
 
 #define outputScan			"SonarScan"
 #define outputDVL			"DVLData"
+#define outputMTi			"MTiData"
 
 typedef pcl::PointXYZI PointT;
 typedef pcl::PointCloud<PointT> PointCloudT;
@@ -47,14 +49,16 @@ public:
 private:
 	ros::Publisher pubScan;
 	ros::Publisher dvlData;
+	ros::Publisher mtiData;
 	// readISLOG::isData isDataVec;
 
 
 public:
 	abandonedMarina(){
 		nh = ros::NodeHandle("~");
-		pubScan = nh.advertise<PointCloudT>(outputScan, 1);
-		dvlData = nh.advertise<abandonedmarina::amDVL>(outputDVL, 1);
+		pubScan = nh.advertise<PointCloudT>(outputScan, 0);
+		dvlData = nh.advertise<abandonedmarina::amDVL>(outputDVL, 0);
+		mtiData = nh.advertise<abandonedmarina::amMTi>(outputMTi, 0);
 		// pubScan = nh.advertise<sensor_msgs::PointCloud2>(outputScan, 1);
 
 
@@ -68,6 +72,7 @@ public:
 		
 		readScan();
 		readDVL();
+		readMTi();
 	}
 
 	void readScan(){
@@ -155,6 +160,62 @@ public:
             line_number++;
         }
         std::cout << "Finished reading DVL data!" << std::endl;
+        std::cout << "lines: " << line_number << std::endl;
+	}
+
+	void readMTi(){
+
+		abandonedmarina::amMTi tmp_mti;
+
+		std::cout << "Started reading MTi data!" << std::endl;
+
+        std::ifstream file("/home/unnar/catkin_ws/src/abandonedmarina/_040825_1735_MTi.log");
+        std::string line; 
+
+
+		int line_number = 0;
+        std::cout.precision(13);
+        double number = 0;
+
+        while (std::getline(file, line))
+        {
+            std::stringstream   linestream(line);
+            std::string         data;
+
+            if (line_number > 6){
+                if (!line.empty() || line!=""){
+                    // std::getline(linestream, data, '\t');  // read up-to the first tab (discard tab).
+                    for(int i = 0; i < 10; i++){
+                        linestream >> number;
+                        if (i == 0){
+                        	tmp_mti.header.stamp = ros::Time(number);
+                        } else if (i == 1) {
+                        	tmp_mti.Roll = number/180*M_PI;
+                        } else if (i == 2) {
+                        	tmp_mti.Pitch = number/180*M_PI;
+                        } else if (i == 3){
+         					tmp_mti.Yaw = number/180*M_PI;                        	
+                        } else if (i == 4){
+                        	tmp_mti.rX = number;
+                        } else if (i == 5){
+                        	tmp_mti.rY = number;
+                        } else if (i == 6){
+                        	tmp_mti.rZ = number;
+                        } else if (i == 7){
+                        	tmp_mti.aX = number;
+                        } else if (i == 8){
+                        	tmp_mti.aY = number;
+                        } else if (i == 9){
+                        	tmp_mti.aZ = number;
+                        }
+                    }
+                    mtiData.publish(tmp_mti);
+                    // vmtid.push_back(tmp_mtid);
+                }
+            }
+            line_number++;
+        }
+        std::cout << "Finished reading MTi data!" << std::endl;
         std::cout << "lines: " << line_number << std::endl;
 	}
 

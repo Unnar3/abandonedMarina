@@ -7,6 +7,7 @@
         
         <node pkg="tf" type="static_transform_publisher" name="dvlTrans" args="0 0 0 1.05 0 3.14 body dvl 100" /> 
         <node pkg="tf" type="static_transform_publisher" name="sonarTrans" args="0.33 0 0.26 3.14 0 0 body sonar 100" /> 
+        <node pkg="tf" type="static_transform_publisher" name="MTiTrans" args="0.0 0 0.04 1.57 0 0 body mti 100" /> 
 
         <!-- Creates a command line argument called file -->
         <arg name="file"/>
