@@ -1,0 +1,21 @@
+<launch>
+        <param name="use_sim_time" type="bool" value="true"/>
+        
+        <node pkg="rviz" type="rviz" name="rviz" args="-d $(find abandonedmarina)marina.rviz"/> 
+        
+        <node name="moveROV" pkg="abandonedmarina" type="moveROV.py" output="screen"/>
+        
+        <node pkg="tf" type="static_transform_publisher" name="dvlTrans" args="0 0 0 1.05 0 3.14 body dvl 100" /> 
+        <node pkg="tf" type="static_transform_publisher" name="sonarTrans" args="0.33 0 0.26 3.14 0 0 body sonar 100" /> 
+
+        <!-- Creates a command line argument called file -->
+        <arg name="file"/>
+        <arg name="rate" default="1"/>
+
+        <!-- Run the rosbag play as a node with the file argument -->
+        <node name="rosbag" pkg="rosbag" type="play" args="--clock -r $(arg rate) -s 210 $(find abandonedmarina)/$(arg file)"/>
+
+        <node name="rostopic" pkg="rostopic" type="rostopic" args="pub -r 10 /tfupdate std_msgs/Bool True"/>
+	
+       
+</launch>

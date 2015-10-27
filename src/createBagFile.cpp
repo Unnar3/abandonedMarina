@@ -155,6 +155,7 @@ public:
             line_number++;
         }
         std::cout << "Finished reading DVL data!" << std::endl;
+        std::cout << "lines: " << line_number << std::endl;
 	}
 
 
