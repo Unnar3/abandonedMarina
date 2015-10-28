@@ -11,6 +11,7 @@ Panels:
         - /Axes1
         - /Axes2
         - /Path1
+        - /Axes3
       Splitter Ratio: 0.5
     Tree Height: 746
   - Class: rviz/Selection
@@ -110,6 +111,13 @@ Visualization Manager:
         Z: 0
       Topic: /path
       Value: true
+    - Class: rviz/Axes
+      Enabled: true
+      Length: 10
+      Name: Axes
+      Radius: 0.5
+      Reference Frame: testekf
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -134,16 +142,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 301.15
+      Distance: 108.304
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -20.9644
-        Y: -92.7884
-        Z: 6.64611
+        X: 6.09655
+        Y: -22.7542
+        Z: 1.33735
       Name: Current View
       Near Clip Distance: 0.01
       Pitch: -1.5002
